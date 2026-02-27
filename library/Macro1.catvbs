@@ -1,0 +1,139 @@
+Language="VBSCRIPT"
+
+Sub CATMain()
+
+Set partDocument1 = CATIA.ActiveDocument
+
+Set part1 = partDocument1.Part
+
+part1.Update 
+
+Set partDocument1 = CATIA.ActiveDocument
+
+Set selection1 = partDocument1.Selection
+
+selection1.Clear 
+
+Set hybridBodies1 = part1.HybridBodies
+
+Set hybridBody1 = hybridBodies1.Item("桨叶GS")
+
+Set hybridBodies2 = hybridBody1.HybridBodies
+
+Set hybridBody2 = hybridBodies2.Item("翼型")
+
+Set hybridBodies3 = hybridBody2.HybridBodies
+
+Set hybridBody3 = hybridBodies3.Item("NACA64-528")
+
+Set hybridBodies4 = hybridBody3.HybridBodies
+
+Set hybridBody4 = hybridBodies4.Item("后处理")
+
+Set hybridShapes1 = hybridBody4.HybridShapes
+
+Set hybridShapeLinePtDir1 = hybridShapes1.Item("Line.1")
+
+selection1.Add hybridShapeLinePtDir1
+
+Set hybridShapePointOnCurve1 = hybridShapes1.Item("Point.902")
+
+selection1.Add hybridShapePointOnCurve1
+
+Set hybridShapeScaling1 = hybridShapes1.Item("Scaling.1")
+
+selection1.Add hybridShapeScaling1
+
+Set hybridShapeRotate1 = hybridShapes1.Item("Rotate.3")
+
+selection1.Add hybridShapeRotate1
+
+Set hybridShapeTranslate1 = hybridShapes1.Item("Translate.5")
+
+selection1.Add hybridShapeTranslate1
+
+Set hybridShapeScaling2 = hybridShapes1.Item("Scaling.2")
+
+selection1.Add hybridShapeScaling2
+
+Set hybridShapeRotate2 = hybridShapes1.Item("Rotate.4")
+
+selection1.Add hybridShapeRotate2
+
+Set hybridShapeTranslate2 = hybridShapes1.Item("Translate.6")
+
+selection1.Add hybridShapeTranslate2
+
+Set hybridShapeScaling3 = hybridShapes1.Item("Scaling.3")
+
+selection1.Add hybridShapeScaling3
+
+Set hybridShapeRotate3 = hybridShapes1.Item("Rotate.6")
+
+selection1.Add hybridShapeRotate3
+
+Set hybridShapeSpline1 = hybridShapes1.Item("Spline.4")
+
+selection1.Add hybridShapeSpline1
+
+Set hybridShapeSpline2 = hybridShapes1.Item("Spline.5")
+
+selection1.Add hybridShapeSpline2
+
+Set hybridShapeLoft1 = hybridShapes1.Item("Multi-sections Surface.1")
+
+selection1.Add hybridShapeLoft1
+
+selection1.Cut 
+
+Set partDocument1 = CATIA.ActiveDocument
+
+Set selection2 = partDocument1.Selection
+
+selection2.Clear 
+
+Set sketches1 = hybridBody1.HybridSketches
+
+Set sketch1 = sketches1.Item("Sketch.2")
+
+selection2.Add sketch1
+
+selection2.Copy 
+
+Set partDocument1 = CATIA.ActiveDocument
+
+Set selection3 = partDocument1.Selection
+
+selection3.Clear 
+
+selection3.Add sketch1
+
+selection3.Copy 
+
+Set specsAndGeomWindow1 = CATIA.ActiveWindow
+
+Set specsAndGeomWindow2 = specsAndGeomWindow1.NewWindow()
+
+specsAndGeomWindow2.Activate 
+
+Set viewer3D1 = specsAndGeomWindow1.ActiveViewer
+
+Set viewpoint3D1 = viewer3D1.Viewpoint3D
+
+Set viewer3D2 = specsAndGeomWindow2.ActiveViewer
+
+Set viewpoint3D2 = viewer3D2.Viewpoint3D
+
+specsAndGeomWindow2.WindowState = catWindowStateMinimized
+
+specsAndGeomWindow1.Activate 
+
+Set documents1 = CATIA.Documents
+
+Set partDocument2 = documents1.Add("Part")
+
+Set specsAndGeomWindow3 = CATIA.ActiveWindow
+
+specsAndGeomWindow3.WindowState = catWindowStateMaximized
+
+End Sub

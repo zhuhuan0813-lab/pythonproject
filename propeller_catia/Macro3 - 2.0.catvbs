@@ -1,0 +1,270 @@
+Language="VBSCRIPT"
+
+Sub CATMain()
+
+    ' ==========================================
+    ' 1. 初始化
+    ' ==========================================
+    Set partDocument1 = CATIA.ActiveDocument
+    Set part1 = partDocument1.Part
+    Set hsf = part1.HybridShapeFactory
+    Set sf = part1.ShapeFactory
+    
+    ' 这一版不需要 SPAWorkbench，纯数学计算
+
+    On Error Resume Next
+    Set hb_root = part1.HybridBodies.Item("桨叶GS")
+    If Err.Number <> 0 Then
+        MsgBox "错误：找不到 '桨叶GS'。", 16
+        Exit Sub
+    End If
+    On Error Goto 0
+
+    ' --- 1.1 查找 Rotate 截面 ---
+    Dim sections(2) 
+    Dim count
+    count = 0
+    For i = 1 To hb_root.HybridShapes.Count
+        Set shp = hb_root.HybridShapes.Item(i)
+        If InStr(UCase(shp.Name), "ROTATE") > 0 Then
+            Set sections(count) = shp
+            count = count + 1
+            If count = 3 Then Exit For
+        End If
+    Next
+    If count < 3 Then MsgBox "错误：未找到3个 Rotate 截面。", 16 : Exit Sub
+
+    ' --- 1.2 查找或创建切割线 ---
+    Dim cutLine
+    On Error Resume Next
+    Set cutLine = hb_root.HybridShapes.Item("Line.2")
+    If Err.Number <> 0 Then
+        Set ptOrigin = hsf.AddNewPointCoord(0,0,0)
+        Set dirY = hsf.AddNewDirectionByCoord(0,1,0)
+        Set cutLine = hsf.AddNewLinePtDir(ptOrigin, dirY, 0, 8000, False)
+        cutLine.Name = "Split_Axis_Line"
+        hb_root.AppendHybridShape cutLine
+        part1.Update
+    End If
+    On Error Goto 0
+    Set refCutLine = part1.CreateReferenceFromObject(cutLine)
+
+    ' ==========================================
+    ' 2. 拆分 & 坐标识别 (Coordinate ID)
+    ' ==========================================
+    Dim upperCurves(2)
+    Dim lowerCurves(2)
+    Dim teLines(2)
+    
+    Set guideLE = hsf.AddNewSpline() : guideLE.SetSplineType 0
+    Set guideUpperTE = hsf.AddNewSpline() : guideUpperTE.SetSplineType 0
+    Set guideLowerTE = hsf.AddNewSpline() : guideLowerTE.SetSplineType 0
+    
+    For k = 0 To 2
+        Set curveRef = part1.CreateReferenceFromObject(sections(k))
+        
+        ' --- A. 拆分 ---
+        Set split1 = hsf.AddNewHybridSplit(curveRef, refCutLine, 1)
+        split1.Name = "Split_Upper_" & k
+        hb_root.AppendHybridShape split1
+        Set upperCurves(k) = split1
+        
+        Set split2 = hsf.AddNewHybridSplit(curveRef, refCutLine, -1)
+        split2.Name = "Split_Lower_" & k
+        hb_root.AppendHybridShape split2
+        Set lowerCurves(k) = split2
+        part1.Update ' 必须Update，否则后续无法获取坐标
+        
+        ' --- B. 坐标计算识别 (Math Logic) ---
+        ' 这里的逻辑是：生成端点 -> 获取坐标 -> 算距离 -> 谁远谁是TE
+        
+        Dim ptUpperTE, ptLowerTE, ptLE_Candidate
+        
+        ' 处理上曲线
+        Set ptUpperTE = IdentifyTE_ByCoordinates(part1, hsf, split1, "Upper", k)
+        hb_root.AppendHybridShape ptUpperTE
+        
+        ' 处理下曲线
+        Set ptLowerTE = IdentifyTE_ByCoordinates(part1, hsf, split2, "Lower", k)
+        hb_root.AppendHybridShape ptLowerTE
+        
+        ' 获取前缘点 (反向逻辑：既然找到了TE，那另一头就是LE)
+        ' 为了简单，我们直接取 Upper 的非 TE 点
+        Set ptLE_Candidate = IdentifyLE_ByCoordinates(part1, hsf, split1, k)
+        hb_root.AppendHybridShape ptLE_Candidate
+
+        ' --- C. 导引线节点 ---
+        guideLE.AddPointWithConstraintExplicit part1.CreateReferenceFromObject(ptLE_Candidate), Nothing, -1, 1, Nothing, 0
+        guideUpperTE.AddPointWithConstraintExplicit part1.CreateReferenceFromObject(ptUpperTE), Nothing, -1, 1, Nothing, 0
+        guideLowerTE.AddPointWithConstraintExplicit part1.CreateReferenceFromObject(ptLowerTE), Nothing, -1, 1, Nothing, 0
+        
+        ' --- D. 钝后缘竖线 ---
+        Set lineTE = hsf.AddNewLinePtPt(part1.CreateReferenceFromObject(ptUpperTE), part1.CreateReferenceFromObject(ptLowerTE))
+        lineTE.Name = "TE_Vertical_Line_" & k
+        hb_root.AppendHybridShape lineTE
+        Set teLines(k) = lineTE
+    Next
+    
+    guideLE.Name = "Guide_LE"
+    guideUpperTE.Name = "Guide_Upper_TE"
+    guideLowerTE.Name = "Guide_Lower_TE"
+    hb_root.AppendHybridShape guideLE
+    hb_root.AppendHybridShape guideUpperTE
+    hb_root.AppendHybridShape guideLowerTE
+    part1.Update
+
+    ' ==========================================
+    ' 3. 生成曲面 (Lofts)
+    ' ==========================================
+    
+    ' 上表面
+    Set loftUpper = hsf.AddNewLoft()
+    loftUpper.Name = "Upper_Surface"
+    loftUpper.SectionCoupling = 1 : loftUpper.Relimitation = 1 : loftUpper.CanonicalDetection = 2
+    For k = 0 To 2 : loftUpper.AddSectionToLoft part1.CreateReferenceFromObject(upperCurves(k)), 1, Nothing : Next
+    loftUpper.AddGuide part1.CreateReferenceFromObject(guideLE)
+    loftUpper.AddGuide part1.CreateReferenceFromObject(guideUpperTE)
+    hb_root.AppendHybridShape loftUpper
+    
+    ' 下表面
+    Set loftLower = hsf.AddNewLoft()
+    loftLower.Name = "Lower_Surface"
+    loftLower.SectionCoupling = 1 : loftLower.Relimitation = 1 : loftLower.CanonicalDetection = 2
+    For k = 0 To 2 : loftLower.AddSectionToLoft part1.CreateReferenceFromObject(lowerCurves(k)), 1, Nothing : Next
+    loftLower.AddGuide part1.CreateReferenceFromObject(guideLE)
+    loftLower.AddGuide part1.CreateReferenceFromObject(guideLowerTE)
+    hb_root.AppendHybridShape loftLower
+    
+    ' 后缘钝面
+    Set loftTE = hsf.AddNewLoft()
+    loftTE.Name = "TE_Blunt_Surface"
+    loftTE.SectionCoupling = 1 : loftTE.Relimitation = 1 : loftTE.CanonicalDetection = 2
+    For k = 0 To 2 : loftTE.AddSectionToLoft part1.CreateReferenceFromObject(teLines(k)), 1, Nothing : Next
+    loftTE.AddGuide part1.CreateReferenceFromObject(guideUpperTE)
+    loftTE.AddGuide part1.CreateReferenceFromObject(guideLowerTE)
+    hb_root.AppendHybridShape loftTE
+    
+    part1.Update
+
+    ' ==========================================
+    ' 4. 封口 & 实体化
+    ' ==========================================
+    
+    ' 翼根
+    Set joinRoot = hsf.AddNewJoin(part1.CreateReferenceFromObject(upperCurves(0)), part1.CreateReferenceFromObject(lowerCurves(0)))
+    joinRoot.AddElement part1.CreateReferenceFromObject(teLines(0))
+    joinRoot.SetConnex 1 : joinRoot.SetManifold 1 : joinRoot.SetMerginDistance 0.1
+    hb_root.AppendHybridShape joinRoot
+    Set fillRoot = hsf.AddNewFill()
+    fillRoot.AddBound part1.CreateReferenceFromObject(joinRoot)
+    fillRoot.Name = "Root_Cap"
+    hb_root.AppendHybridShape fillRoot
+    
+    ' 翼尖
+    Set joinTip = hsf.AddNewJoin(part1.CreateReferenceFromObject(upperCurves(2)), part1.CreateReferenceFromObject(lowerCurves(2)))
+    joinTip.AddElement part1.CreateReferenceFromObject(teLines(2))
+    joinTip.SetConnex 1 : joinTip.SetManifold 1 : joinTip.SetMerginDistance 0.1
+    hb_root.AppendHybridShape joinTip
+    Set fillTip = hsf.AddNewFill()
+    fillTip.AddBound part1.CreateReferenceFromObject(joinTip)
+    fillTip.Name = "Tip_Cap"
+    hb_root.AppendHybridShape fillTip
+    
+    part1.Update
+
+    ' 整体缝合
+    Set mainJoin = hsf.AddNewJoin(part1.CreateReferenceFromObject(loftUpper), part1.CreateReferenceFromObject(loftLower))
+    mainJoin.AddElement part1.CreateReferenceFromObject(loftTE)
+    mainJoin.AddElement part1.CreateReferenceFromObject(fillRoot)
+    mainJoin.AddElement part1.CreateReferenceFromObject(fillTip)
+    mainJoin.SetConnex 1 : mainJoin.SetManifold 1 : mainJoin.SetMerginDistance 0.1
+    mainJoin.Name = "Final_Propeller_Surface"
+    hb_root.AppendHybridShape mainJoin
+    part1.Update
+    
+    ' 实体
+    Set partBody = part1.MainBody : part1.InWorkObject = partBody
+    Set closeSolid = sf.AddNewCloseSurface(part1.CreateReferenceFromObject(mainJoin))
+    closeSolid.Name = "Propeller_Solid_CFD"
+    part1.Update
+    
+    ' 清理
+    Dim selection : Set selection = partDocument1.Selection
+    selection.Clear : selection.Add hb_root : selection.VisProperties.SetShow 1
+    selection.Clear : selection.Add closeSolid : selection.VisProperties.SetShow 0
+    
+    MsgBox "成功！CFD钝后缘实体已生成 (坐标算法版)。", 64
+
+End Sub
+
+' ==============================================================================
+' 辅助函数：通过坐标距离识别后缘 (TE)
+' ==============================================================================
+Function IdentifyTE_ByCoordinates(part, hsf, curve, suffix, k)
+    Dim refC, p0, p1
+    Set refC = part.CreateReferenceFromObject(curve)
+    
+    ' 生成临时点用于测量坐标
+    Set p0 = hsf.AddNewPointOnCurveFromPercent(refC, 0.0, False)
+    Set p1 = hsf.AddNewPointOnCurveFromPercent(refC, 1.0, False)
+    
+    ' 必须更新才能获取坐标
+    part.UpdateObject p0
+    part.UpdateObject p1
+    
+    Dim c0(2), c1(2)
+    p0.GetCoordinates c0
+    p1.GetCoordinates c1
+    
+    ' 计算到原点(0,0,0)的距离平方 (不开方节省资源)
+    Dim dist0, dist1
+    dist0 = c0(0)*c0(0) + c0(1)*c0(1) + c0(2)*c0(2)
+    dist1 = c1(0)*c1(0) + c1(1)*c1(1) + c1(2)*c1(2)
+    
+    ' 离原点远的是后缘
+    Dim finalPt
+    If dist0 > dist1 Then
+        Set finalPt = p0
+        part.HybridBodies.Item("桨叶GS").AppendHybridShape p1 ' 把不用的点删掉或者隐藏，这里为了简单直接保留但重命名
+        p1.Name = "Trash_" & k
+    Else
+        Set finalPt = p1
+        part.HybridBodies.Item("桨叶GS").AppendHybridShape p0
+        p0.Name = "Trash_" & k
+    End If
+    
+    finalPt.Name = "Pt_" & suffix & "_TE_" & k
+    Set IdentifyTE_ByCoordinates = finalPt
+End Function
+
+' ==============================================================================
+' 辅助函数：通过坐标距离识别前缘 (LE)
+' ==============================================================================
+Function IdentifyLE_ByCoordinates(part, hsf, curve, k)
+    Dim refC, p0, p1
+    Set refC = part.CreateReferenceFromObject(curve)
+    Set p0 = hsf.AddNewPointOnCurveFromPercent(refC, 0.0, False)
+    Set p1 = hsf.AddNewPointOnCurveFromPercent(refC, 1.0, False)
+    
+    part.UpdateObject p0
+    part.UpdateObject p1
+    
+    Dim c0(2), c1(2)
+    p0.GetCoordinates c0
+    p1.GetCoordinates c1
+    
+    Dim dist0, dist1
+    dist0 = c0(0)*c0(0) + c0(1)*c0(1) + c0(2)*c0(2)
+    dist1 = c1(0)*c1(0) + c1(1)*c1(1) + c1(2)*c1(2)
+    
+    ' 离原点近的是前缘
+    Dim finalPt
+    If dist0 < dist1 Then
+        Set finalPt = p0
+    Else
+        Set finalPt = p1
+    End If
+    
+    finalPt.Name = "Pt_LE_" & k
+    Set IdentifyLE_ByCoordinates = finalPt
+End Function

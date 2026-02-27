@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="fbf92b9b-5672-4e9d-bc5e-cf6c7e5b3fcb" name="更改" comment="">
+      <change afterPath="$PROJECT_DIR$/.idea/.name" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/PythonProject.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/encodings.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/propeller_catia/V3 初步构建机翼.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/propeller_catia/数据/1.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/propeller_catia/数据/BEM.py" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Python Script" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="HighlightingSettingsPerFile">
+    <setting file="file://$PROJECT_DIR$/propeller_catia/catia 操作.py" root0="FORCE_HIGHLIGHTING" />
+  </component>
+  <component name="ProblemsViewState">
+    <hideBySeverity>
+      <option value="300" />
+    </hideBySeverity>
+    <option name="selectedTabId" value="DEPENDENCY_CHECKER_PROBLEMS_TAB" />
+    <option name="showPreview" value="true" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 5
+}</component>
+  <component name="ProjectId" id="38rxgcSB8hZeLxnmZatHs0q9Cij" />
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ASKED_SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "Python 测试.Python 测试 (test_cst_generation.py 内).executor": "Run",
+    "Python.1.executor": "Run",
+    "Python.BEM.executor": "Run",
+    "Python.CST V2(拟合不错）.executor": "Run",
+    "Python.CST V2.executor": "Run",
+    "Python.CST V3-带输出.executor": "Run",
+    "Python.CST参数化.executor": "Run",
+    "Python.V1（曲线准备完成）.executor": "Run",
+    "Python.V2.executor": "Run",
+    "Python.V2_complete_fixed.executor": "Run",
+    "Python.V2_final (1).executor": "Run",
+    "Python.V2_final (2).executor": "Run",
+    "Python.V2_parameterized (1).executor": "Run",
+    "Python.V2_保存版.executor": "Run",
+    "Python.V2（+平移扭转参数化关联）.executor": "Run",
+    "Python.V3 初步构建机翼.executor": "Run",
+    "Python.V3_complete_with_loft (1).executor": "Run",
+    "Python.V3_complete_with_loft (2).executor": "Run",
+    "Python.V4_blunt_te_solid.executor": "Run",
+    "Python.catia 操作.executor": "Run",
+    "Python.catia_operation.executor": "Run",
+    "Python.main.executor": "Run",
+    "Python.main_propeller_builder.executor": "Run",
+    "Python.main_workflow.executor": "Run",
+    "Python.propeller_blade_complete (1).executor": "Run",
+    "Python.propeller_complete_automation_FIXED (1).executor": "Run",
+    "Python.propeller_modeling.executor": "Run",
+    "Python.read_airfoils.executor": "Run",
+    "Python.run_wing_loft.executor": "Run",
+    "Python.xv15_bem_screening.executor": "Run",
+    "Python.xv15_sampling.executor": "Run",
+    "Python.临时测试xfoil.executor": "Run",
+    "Python.学习.executor": "Run",
+    "Python.测试.executor": "Run",
+    "Python.测试2.executor": "Run",
+    "Python.测试3 catia.executor": "Run",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "git-widget-placeholder": "master",
+    "ignore.virus.scanning.warn.message": "true",
+    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable"
+  }
+}]]></component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="D:\PythonProject\propeller_catia\数据" />
+      <recent name="D:\PythonProject\pycatia" />
+    </key>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-python-sdk-4e2b1448bda8-9a97661f3031-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-252.27397.106" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="默认任务">
+      <changelist id="fbf92b9b-5672-4e9d-bc5e-cf6c7e5b3fcb" name="更改" comment="" />
+      <created>1769571603002</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1769571603002</updated>
+    </task>
+    <servers />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/pycatia/catia 操作.py</url>
+          <line>40</line>
+          <option name="timeStamp" value="3" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
+  </component>
+</project>
